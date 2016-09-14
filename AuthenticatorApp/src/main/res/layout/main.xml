@@ -18,7 +18,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_height="fill_parent" android:layout_width="fill_parent"
-    android:clipToPadding="true">
+    android:clipToPadding="true"
+    android:background="@drawable/test_bg" >
   <ScrollView
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
@@ -79,6 +80,6 @@
   <ListView android:id="@+id/user_list"
     android:layout_width="fill_parent" android:layout_height="wrap_content"
     style="?attr/accountListWithVerificationCodes"
-    />
+      android:background="#98F0F0F0" />
 </LinearLayout>
 
