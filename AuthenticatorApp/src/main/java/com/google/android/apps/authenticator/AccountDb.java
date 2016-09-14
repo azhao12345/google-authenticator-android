@@ -61,6 +61,8 @@ public class AccountDb {
   // @VisibleForTesting
   static final String PATH = "databases";
 
+  private static final String ISSUER_COLUMN = "issuer";
+
   private static final String TABLE_INFO_COLUMN_NAME_COLUMN = "name";
 
   private static final int PROVIDER_UNKNOWN = 0;
@@ -113,6 +115,12 @@ public class AccountDb {
       mDatabase.execSQL(String.format(
           "ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT %s",
           TABLE_NAME, IS_GOOGLE_COLUMN, PROVIDER_UNKNOWN));
+    }
+    if (!tableColumnNames.contains(ISSUER_COLUMN.toLowerCase(Locale.US))) {
+      // Migrate from old schema where the IS_GOOGLE_COLUMN wasn't there
+      mDatabase.execSQL(String.format(
+              "ALTER TABLE %s ADD COLUMN %s TEXT DEFAULT NULL",
+              TABLE_NAME, ISSUER_COLUMN));
     }
   }
 
@@ -228,6 +236,19 @@ public class AccountDb {
       if (!cursorIsEmpty(cursor)) {
         cursor.moveToFirst();
         return cursor.getString(cursor.getColumnIndex(SECRET_COLUMN));
+      }
+    } finally {
+      tryCloseCursor(cursor);
+    }
+    return null;
+  }
+
+  public String getIssuer(String email) {
+    Cursor cursor = getAccount(email);
+    try {
+      if (!cursorIsEmpty(cursor)) {
+        cursor.moveToFirst();
+        return cursor.getString(cursor.getColumnIndex(ISSUER_COLUMN));
       }
     } finally {
       tryCloseCursor(cursor);
@@ -353,8 +374,8 @@ public class AccountDb {
    * @param counter only important for the hotp type
    */
   public void update(String email, String secret, String oldEmail,
-      OtpType type, Integer counter) {
-    update(email, secret, oldEmail, type, counter, null);
+      OtpType type, String issuer, Integer counter) {
+    update(email, secret, oldEmail, type, counter, issuer, null);
   }
 
   /**
@@ -368,7 +389,7 @@ public class AccountDb {
    *        the previous value (or use a default if adding a key).
    */
   public void update(String email, String secret, String oldEmail,
-      OtpType type, Integer counter, Boolean googleAccount) {
+      OtpType type, Integer counter, String issuer, Boolean googleAccount) {
     ContentValues values = new ContentValues();
     values.put(EMAIL_COLUMN, email);
     values.put(SECRET_COLUMN, secret);
@@ -379,6 +400,7 @@ public class AccountDb {
               IS_GOOGLE_COLUMN,
           (googleAccount.booleanValue()) ? PROVIDER_GOOGLE : PROVIDER_UNKNOWN);
     }
+    values.put(ISSUER_COLUMN, issuer);
     int updated = mDatabase.update(TABLE_NAME, values,
                                   whereClause(oldEmail), null);
     if (updated == 0) {

@@ -110,7 +110,8 @@ public class EnterKeyActivity extends WizardPageActivity<Serializable> implement
           getEnteredKey(),
           null,
           mode,
-          AccountDb.DEFAULT_HOTP_COUNTER);
+          AccountDb.DEFAULT_HOTP_COUNTER,
+          null);
       exitWizard();
     }
   }
