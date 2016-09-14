@@ -29,3 +29,6 @@ proguard/
 # Android Studio Project Files
 *.iml
 .idea/
+
+# gay ass osx files
+.DS_Store
