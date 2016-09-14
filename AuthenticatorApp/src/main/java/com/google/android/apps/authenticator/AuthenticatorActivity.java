@@ -727,7 +727,7 @@ public class AuthenticatorActivity extends TestableActivity {
             (int) (mEnterPinPrompt.getTextSize() / pixelsPerDip));
         Utilities.setWebViewHtml(
             webView,
-            "<html><body style=\"background-color: transparent;\" text=\"white\">"
+            "<html><body style=\"background-color: transparent;\" text=\"black\">"
                 + getString(
                     mAccountDb.isGoogleAccount(user)
                         ? R.string.remove_google_account_dialog_message
