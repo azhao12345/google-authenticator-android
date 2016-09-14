@@ -665,7 +665,9 @@ public class AuthenticatorActivity extends TestableActivity {
     }
     menu.add(0, RENAME_ID, 0, R.string.rename);
     menu.add(0, REMOVE_ID, 0, R.string.context_menu_remove_account);
-    menu.add(0, SHOW_KEY_ID, 0, "Show key");
+    if(type == OtpType.TOTP) {
+      menu.add(0, SHOW_KEY_ID, 0, "Show key");
+    }
   }
 
   @Override
