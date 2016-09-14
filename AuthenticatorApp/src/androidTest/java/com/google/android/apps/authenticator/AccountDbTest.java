@@ -211,7 +211,7 @@ public class AccountDbTest extends  AndroidTestCase {
     accountDb = DependencyInjector.getAccountDb();
     MoreAsserts.assertContentsInAnyOrder(
         AccountDb.listTableColumnNamesLowerCase(accountDb.mDatabase, AccountDb.TABLE_NAME),
-        "first", AccountDb.PROVIDER_COLUMN);
+        "first", AccountDb.IS_GOOGLE_COLUMN);
   }
 
   private void deleteAccountDb() {

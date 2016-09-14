@@ -55,7 +55,7 @@ public class AccountDb {
   private static final String COUNTER_COLUMN = "counter";
   private static final String TYPE_COLUMN = "type";
   // @VisibleForTesting
-  static final String PROVIDER_COLUMN = "provider";
+  static final String IS_GOOGLE_COLUMN = "provider"; //we keep it named like this because that's what google called it
   // @VisibleForTesting
   static final String TABLE_NAME = "accounts";
   // @VisibleForTesting
@@ -105,14 +105,14 @@ public class AccountDb {
         " %s INTEGER DEFAULT %s, %s INTEGER, %s INTEGER DEFAULT %s)",
         TABLE_NAME, ID_COLUMN, EMAIL_COLUMN, SECRET_COLUMN, COUNTER_COLUMN,
         DEFAULT_HOTP_COUNTER, TYPE_COLUMN,
-        PROVIDER_COLUMN, PROVIDER_UNKNOWN));
+            IS_GOOGLE_COLUMN, PROVIDER_UNKNOWN));
 
     Collection<String> tableColumnNames = listTableColumnNamesLowerCase();
-    if (!tableColumnNames.contains(PROVIDER_COLUMN.toLowerCase(Locale.US))) {
-      // Migrate from old schema where the PROVIDER_COLUMN wasn't there
+    if (!tableColumnNames.contains(IS_GOOGLE_COLUMN.toLowerCase(Locale.US))) {
+      // Migrate from old schema where the IS_GOOGLE_COLUMN wasn't there
       mDatabase.execSQL(String.format(
           "ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT %s",
-          TABLE_NAME, PROVIDER_COLUMN, PROVIDER_UNKNOWN));
+          TABLE_NAME, IS_GOOGLE_COLUMN, PROVIDER_UNKNOWN));
     }
   }
 
@@ -310,7 +310,7 @@ public class AccountDb {
     try {
       if (!cursorIsEmpty(cursor)) {
         cursor.moveToFirst();
-        if (cursor.getInt(cursor.getColumnIndex(PROVIDER_COLUMN)) == PROVIDER_GOOGLE) {
+        if (cursor.getInt(cursor.getColumnIndex(IS_GOOGLE_COLUMN)) == PROVIDER_GOOGLE) {
           // The account is marked as source: Google
           return true;
         }
@@ -376,7 +376,7 @@ public class AccountDb {
     values.put(COUNTER_COLUMN, counter);
     if (googleAccount != null) {
       values.put(
-          PROVIDER_COLUMN,
+              IS_GOOGLE_COLUMN,
           (googleAccount.booleanValue()) ? PROVIDER_GOOGLE : PROVIDER_UNKNOWN);
     }
     int updated = mDatabase.update(TABLE_NAME, values,
