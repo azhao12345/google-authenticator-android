@@ -189,6 +189,8 @@ public class AuthenticatorActivity extends TestableActivity {
   public static final int REMOVE_ID = 2;
   // @VisibleForTesting
   static final int COPY_TO_CLIPBOARD_ID = 3;
+
+  static final int SHOW_KEY_ID = 4;
   // @VisibleForTesting
   static final int SCAN_REQUEST = 31337;
 
@@ -663,6 +665,7 @@ public class AuthenticatorActivity extends TestableActivity {
     }
     menu.add(0, RENAME_ID, 0, R.string.rename);
     menu.add(0, REMOVE_ID, 0, R.string.context_menu_remove_account);
+    menu.add(0, SHOW_KEY_ID, 0, "Show key");
   }
 
   @Override
@@ -732,6 +735,13 @@ public class AuthenticatorActivity extends TestableActivity {
           )
           .setNegativeButton(R.string.cancel, null)
           .show();
+        return true;
+      case SHOW_KEY_ID:
+        intent = new Intent(Intent.ACTION_VIEW);
+        intent.setClass(this, DisplayKeyActivity.class);
+        intent.putExtra("user", user);
+        intent.putExtra("secret", mAccountDb.getSecret(user));
+        startActivity(intent);
         return true;
       default:
         return super.onContextItemSelected(item);
