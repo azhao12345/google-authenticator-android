@@ -180,6 +180,7 @@ public class AuthenticatorActivity extends TestableActivity {
   private static final String TOTP = "totp"; // time-based
   private static final String HOTP = "hotp"; // counter-based
   private static final String SECRET_PARAM = "secret";
+  private static final String ISSUER_PARAM = "issuer";
   private static final String COUNTER_PARAM = "counter";
   // @VisibleForTesting
   public static final int CHECK_KEY_VALUE_ID = 0;
@@ -483,6 +484,7 @@ public class AuthenticatorActivity extends TestableActivity {
     currentPin.isHotp = (type == OtpType.HOTP);
 
     currentPin.user = user;
+    currentPin.issuer = mAccountDb.getIssuer(user);
 
     if (!currentPin.isHotp || computeHotp) {
       // Always safe to recompute, because this code path is only
@@ -499,7 +501,7 @@ public class AuthenticatorActivity extends TestableActivity {
   /**
    * Parses a secret value from a URI. The format will be:
    *
-   * otpauth://totp/user@example.com?secret=FFF...
+   * otpauth://totp/ISSUERDUDE:user@example.com?secret=FFF... &issuer=ISSUERDUDE
    * otpauth://hotp/user@example.com?secret=FFF...&counter=123
    *
    * @param uri The URI containing the secret key
@@ -515,6 +517,7 @@ public class AuthenticatorActivity extends TestableActivity {
     final String secret;
     final OtpType type;
     final Integer counter;
+    String issuer;
 
     if (!OTP_SCHEME.equals(scheme)) {
       Log.e(getString(R.string.app_name), LOCAL_TAG + ": Invalid or missing scheme in uri");
@@ -567,6 +570,20 @@ public class AuthenticatorActivity extends TestableActivity {
       return;
     }
 
+    //grab the issuer
+    issuer = uri.getQueryParameter(ISSUER_PARAM);
+    //verify that this matches with the beginning of the user name
+    //if there is an inconsistency, just bail and leave it null
+    //it really should be the same but we don't want to regress in the case of a loser 3rd party
+    //fucking it up
+    if(issuer != null) {
+      String userIssuer = user.split(":")[0];
+      if(!issuer.equals(userIssuer)) {
+        //we just write a warning but don't do anything
+        Log.e(getString(R.string.app_name), LOCAL_TAG + ": Invalid issuer parameter");
+      }
+    }
+
     if (secret.equals(mAccountDb.getSecret(user)) &&
         counter == mAccountDb.getCounter(user) &&
         type == mAccountDb.getType(user)) {
@@ -574,10 +591,10 @@ public class AuthenticatorActivity extends TestableActivity {
     }
 
     if (confirmBeforeSave) {
-      mSaveKeyDialogParams = new SaveKeyDialogParams(user, secret, type, counter);
+      mSaveKeyDialogParams = new SaveKeyDialogParams(user, secret, type, counter, issuer);
       showDialog(DIALOG_ID_SAVE_KEY);
     } else {
-      saveSecretAndRefreshUserList(user, secret, null, type, counter);
+      saveSecretAndRefreshUserList(user, secret, null, type, counter, issuer);
     }
   }
 
@@ -603,8 +620,8 @@ public class AuthenticatorActivity extends TestableActivity {
    * @param counter only important for the hotp type
    */
   private void saveSecretAndRefreshUserList(String user, String secret,
-      String originalUser, OtpType type, Integer counter) {
-    if (saveSecret(this, user, secret, originalUser, type, counter)) {
+      String originalUser, OtpType type, Integer counter, String issuer) {
+    if (saveSecret(this, user, secret, originalUser, type, counter, issuer)) {
       refreshUserList(true);
     }
   }
@@ -621,13 +638,13 @@ public class AuthenticatorActivity extends TestableActivity {
    * @return {@code true} if the secret was saved, {@code false} otherwise.
    */
   static boolean saveSecret(Context context, String user, String secret,
-                         String originalUser, OtpType type, Integer counter) {
+                         String originalUser, OtpType type, Integer counter, String issuer) {
     if (originalUser == null) {  // new user account
       originalUser = user;
     }
     if (secret != null) {
       AccountDb accountDb = DependencyInjector.getAccountDb();
-      accountDb.update(user, secret, originalUser, type, counter);
+      accountDb.update(user, secret, originalUser, type, issuer, counter);
       DependencyInjector.getOptionalFeatures().onAuthenticatorActivityAccountSaved(context, user);
       // TODO: Consider having a display message that activities can call and it
       //       will present a toast with a uniform duration, and perhaps update
@@ -750,7 +767,7 @@ public class AuthenticatorActivity extends TestableActivity {
           } else {
             saveSecretAndRefreshUserList(newName,
                 mAccountDb.getSecret(user), user, mAccountDb.getType(user),
-                mAccountDb.getCounter(user));
+                mAccountDb.getCounter(user), mAccountDb.getIssuer(user));
           }
         }
       }
@@ -918,7 +935,8 @@ public class AuthenticatorActivity extends TestableActivity {
                       saveKeyDialogParams.secret,
                       null,
                       saveKeyDialogParams.type,
-                      saveKeyDialogParams.counter);
+                      saveKeyDialogParams.counter,
+                      saveKeyDialogParams.issuer);
                 }
               })
             .setNegativeButton(R.string.cancel, null)
@@ -1016,6 +1034,7 @@ public class AuthenticatorActivity extends TestableActivity {
   private static class PinInfo {
     private String pin; // calculated OTP, or a placeholder if not calculated
     private String user;
+    private String issuer;
     private boolean isHotp = false; // used to see if button needs to be displayed
 
     /** HOTP only: Whether code generation is allowed for this account. */
@@ -1135,6 +1154,8 @@ public class AuthenticatorActivity extends TestableActivity {
      }
      TextView pinView = (TextView) row.findViewById(R.id.pin_value);
      TextView userView = (TextView) row.findViewById(R.id.current_user);
+     TextView issuerView = (TextView) row.findViewById(R.id.current_issuer);
+
      View buttonView = row.findViewById(R.id.next_otp);
      CountdownIndicator countdownIndicator =
          (CountdownIndicator) row.findViewById(R.id.countdown_icon);
@@ -1165,6 +1186,12 @@ public class AuthenticatorActivity extends TestableActivity {
      }
      pinView.setText(currentPin.pin);
      userView.setText(currentPin.user);
+     if(currentPin.issuer == null) {
+       issuerView.setVisibility(View.GONE);
+     } else {
+       issuerView.setVisibility(View.VISIBLE);
+       issuerView.setText(currentPin.issuer);
+     }
 
      return row;
     }
@@ -1217,12 +1244,14 @@ public class AuthenticatorActivity extends TestableActivity {
     private final String secret;
     private final OtpType type;
     private final Integer counter;
+    private final String issuer;
 
-    private SaveKeyDialogParams(String user, String secret, OtpType type, Integer counter) {
+    private SaveKeyDialogParams(String user, String secret, OtpType type, Integer counter, String issuer) {
       this.user = user;
       this.secret = secret;
       this.type = type;
       this.counter = counter;
+      this.issuer = issuer;
     }
   }
 }

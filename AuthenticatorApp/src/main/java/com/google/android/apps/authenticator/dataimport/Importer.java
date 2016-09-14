@@ -124,7 +124,7 @@ public class Importer {
         }
       }
 
-      accountDb.update(name, encodedSecret, name, type, counter);
+      accountDb.update(name, encodedSecret, name, type, null, counter);
       importedAccountCount++;
     }
 

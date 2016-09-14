@@ -21,12 +21,12 @@ with user_row_legacy.xml -->
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
 
-  <TextView android:id="@+id/current_user" android:layout_width="wrap_content"
+  <TextView android:id="@+id/current_issuer" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    style="?attr/accountListWithVerificationCodesRowAccountName"
+    style="?attr/accountListWithVerificationCodesRowIssuerName"
     android:layout_marginLeft="20dip"
     android:layout_marginRight="20dip"
-    android:layout_marginTop="15dip" />
+    android:layout_marginTop="5dip" />
 
   <LinearLayout android:id="@+id/pin_area" android:orientation="horizontal"
     android:layout_width="fill_parent" android:layout_height="wrap_content"
@@ -54,5 +54,11 @@ with user_row_legacy.xml -->
         />
     </LinearLayout>
   </LinearLayout>
+  <TextView android:id="@+id/current_user" android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      style="?attr/accountListWithVerificationCodesRowAccountName"
+      android:layout_marginLeft="20dip"
+      android:layout_marginRight="20dip"
+      android:layout_marginBottom="5dip" />
 
 </com.google.android.apps.authenticator.UserRowView>

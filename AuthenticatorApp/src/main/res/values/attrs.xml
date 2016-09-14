@@ -18,6 +18,7 @@
   <declare-styleable name="Theme">
     <attr name="accountListWithVerificationCodes" format="reference" />
     <attr name="accountListWithVerificationCodesRowAccountName" format="reference" />
+    <attr name="accountListWithVerificationCodesRowIssuerName" format="reference" />
     <attr name="accountListWithVerificationCodesRowVerificationCode" format="reference" />
     <attr name="accountListWithVerificationCodesRowCountdownIndicator" format="reference" />
     <attr name="wizardButtonBarStyle" format="reference" />
