@@ -34,6 +34,10 @@
       <Spinner android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
         android:id="@+id/type_choice" android:prompt="@string/type_prompt" />
+      <EditText android:id="@+id/key_issuer" android:layout_marginTop="5dip"
+          android:layout_width="fill_parent" android:layout_height="wrap_content"
+          android:hint="@string/enter_issuer_hint"
+          android:singleLine="true" android:inputType="textNoSuggestions|textVisiblePassword"/>
     </LinearLayout>
   </LinearLayout>
 </ScrollView>

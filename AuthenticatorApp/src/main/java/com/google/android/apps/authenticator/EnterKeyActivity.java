@@ -40,6 +40,7 @@ public class EnterKeyActivity extends WizardPageActivity<Serializable> implement
   private static final int MIN_KEY_BYTES = 10;
   private EditText mKeyEntryField;
   private EditText mAccountName;
+  private EditText mIssuerName;
   private Spinner mType;
 
   /**
@@ -53,6 +54,7 @@ public class EnterKeyActivity extends WizardPageActivity<Serializable> implement
     // Find all the views on the page
     mKeyEntryField = (EditText) findViewById(R.id.key_value);
     mAccountName = (EditText) findViewById(R.id.account_name);
+    mIssuerName = (EditText) findViewById(R.id.key_issuer);
     mType = (Spinner) findViewById(R.id.type_choice);
 
     ArrayAdapter<CharSequence> types = ArrayAdapter.createFromResource(this,
@@ -72,6 +74,15 @@ public class EnterKeyActivity extends WizardPageActivity<Serializable> implement
   private String getEnteredKey() {
     String enteredKey = mKeyEntryField.getText().toString();
     return enteredKey.replace('1', 'I').replace('0', 'O');
+  }
+
+  private String getIssuer() {
+    //grab the issuer, or leave it null if they don't change it
+    String issuer = mIssuerName.getText().toString();
+    if(issuer.equals("")) {
+      issuer = null;
+    }
+    return issuer;
   }
 
   /*
@@ -111,7 +122,7 @@ public class EnterKeyActivity extends WizardPageActivity<Serializable> implement
           null,
           mode,
           AccountDb.DEFAULT_HOTP_COUNTER,
-          null);
+          getIssuer());
       exitWizard();
     }
   }
