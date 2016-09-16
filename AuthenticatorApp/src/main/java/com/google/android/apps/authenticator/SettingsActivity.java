@@ -68,6 +68,7 @@ public class SettingsActivity extends TestablePreferenceActivity {
                                         public void onClick(DialogInterface dialog, int whichButton) {
                                             backupPasswordManager.disableBackups();
                                             screen.removePreference(disableExportButton);
+                                            screen.removePreference(changePasswordButton);
                                         }
                                     })
                             .setNegativeButton(R.string.cancel, null)
