@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.apps.authenticator;
+package com.google.android.apps.authenticator.keybackup;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,6 +26,8 @@ import android.widget.TextView;
 import com.google.android.apps.authenticator2.R;
 
 import net.glxn.qrgen.android.QRCode;
+
+import java.net.URLEncoder;
 
 
 /**
@@ -46,8 +48,14 @@ public class DisplayKeyActivity extends Activity {
     Bundle extras = intent.getExtras();
     String user = extras.getString("user");
     String key = extras.getString("secret");
+    String issuer = extras.getString("issuer");
 
-    Bitmap myBitmap = QRCode.from("otpauth://totp/" + user + "?secret=" + key).withSize(500, 500).bitmap();
+    //TODO figure out a better way to do the user part
+    user = URLEncoder.encode(user).replace("+", "%20");
+    issuer = URLEncoder.encode(issuer).replace("+", "%20");
+
+    Bitmap myBitmap = QRCode.from("otpauth://totp/" + user + "?secret=" + key
+      + "&issuer=" + issuer).withSize(500, 500).bitmap();
     ImageView myImage = (ImageView) findViewById(R.id.code_qr);
     myImage.setImageBitmap(myBitmap);
 

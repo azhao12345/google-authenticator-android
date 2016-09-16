@@ -19,6 +19,7 @@ package com.google.android.apps.authenticator;
 import com.google.android.apps.authenticator.AccountDb.OtpType;
 import com.google.android.apps.authenticator.dataimport.ImportController;
 import com.google.android.apps.authenticator.howitworks.IntroEnterPasswordActivity;
+import com.google.android.apps.authenticator.keybackup.DisplayKeyActivity;
 import com.google.android.apps.authenticator.testability.DependencyInjector;
 import com.google.android.apps.authenticator.testability.TestableActivity;
 import com.google.android.apps.authenticator2.R;
@@ -763,6 +764,7 @@ public class AuthenticatorActivity extends TestableActivity {
         intent.setClass(this, DisplayKeyActivity.class);
         intent.putExtra("user", user);
         intent.putExtra("secret", mAccountDb.getSecret(user));
+        intent.putExtra("issuer", mAccountDb.getIssuer(user));
         startActivity(intent);
         return true;
       default:

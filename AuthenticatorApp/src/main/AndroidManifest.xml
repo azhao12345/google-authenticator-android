@@ -84,7 +84,7 @@
               android:theme="@android:style/Theme.Translucent.NoTitleBar"
               android:label="@string/timesync_sync_now_screen_title" />
 
-    <activity android:name="com.google.android.apps.authenticator.DisplayKeyActivity"
+    <activity android:name="com.google.android.apps.authenticator.keybackup.DisplayKeyActivity"
         android:label="Display secret key" />
   </application>
 
