@@ -19,6 +19,7 @@ package com.google.android.apps.authenticator;
 import com.google.android.apps.authenticator.AccountDb.OtpType;
 import com.google.android.apps.authenticator.dataimport.ImportController;
 import com.google.android.apps.authenticator.howitworks.IntroEnterPasswordActivity;
+import com.google.android.apps.authenticator.keybackup.BackupPasswordManager;
 import com.google.android.apps.authenticator.keybackup.DisplayKeyActivity;
 import com.google.android.apps.authenticator.testability.DependencyInjector;
 import com.google.android.apps.authenticator.testability.TestableActivity;
@@ -277,7 +278,36 @@ public class AuthenticatorActivity extends TestableActivity {
       DependencyInjector.getOptionalFeatures().onAuthenticatorActivityCreated(this);
       importDataFromOldAppIfNecessary();
       handleIntent(getIntent());
+      setPassword();
     }
+  }
+
+  private void setPassword() {
+    final BackupPasswordManager manager = DependencyInjector.getBackupPasswordManager();
+    if(manager.passwordSet()) {
+      return;
+    }
+    final View frame = getLayoutInflater().inflate(R.layout.rename,
+            (ViewGroup) findViewById(R.id.rename_root));
+    final EditText nameEdit = (EditText) frame.findViewById(R.id.rename_edittext);
+    new AlertDialog.Builder(this)
+            .setTitle("Enter a password to protect key sharing and backup, or leave blank to permanently disable this feature")
+            .setView(frame)
+            .setPositiveButton(R.string.submit,
+                    new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int whichButton) {
+                        manager.updatePassword(nameEdit.getText().toString());
+                      }
+                    })
+            .setNegativeButton(R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int whichButton) {
+                        manager.disableBackups();
+                      }
+                    })
+            .show();
   }
 
   /**
@@ -686,7 +716,7 @@ public class AuthenticatorActivity extends TestableActivity {
     }
     menu.add(0, RENAME_ID, 0, R.string.rename);
     menu.add(0, REMOVE_ID, 0, R.string.context_menu_remove_account);
-    if(type == OtpType.TOTP) {
+    if(type == OtpType.TOTP && DependencyInjector.getBackupPasswordManager().backupEnabled()) {
       menu.add(0, SHOW_KEY_ID, 0, "Show key");
     }
   }
@@ -760,12 +790,32 @@ public class AuthenticatorActivity extends TestableActivity {
           .show();
         return true;
       case SHOW_KEY_ID:
-        intent = new Intent(Intent.ACTION_VIEW);
-        intent.setClass(this, DisplayKeyActivity.class);
-        intent.putExtra("user", user);
-        intent.putExtra("secret", mAccountDb.getSecret(user));
-        intent.putExtra("issuer", mAccountDb.getIssuer(user));
-        startActivity(intent);
+        final BackupPasswordManager manager = DependencyInjector.getBackupPasswordManager();
+        final View frames = getLayoutInflater().inflate(R.layout.rename,
+                (ViewGroup) findViewById(R.id.rename_root));
+        final EditText nameEdits = (EditText) frames.findViewById(R.id.rename_edittext);
+        final Activity thisActivity = this;
+        new AlertDialog.Builder(this)
+                .setTitle("Enter password to view backups")
+                .setView(frames)
+                .setPositiveButton("continue",
+                        new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface dialog, int whichButton) {
+                            if(manager.verifyPassword(nameEdits.getText().toString())) {
+                              Intent intents = new Intent(Intent.ACTION_VIEW);
+                              intents.setClass(thisActivity, DisplayKeyActivity.class);
+                              intents.putExtra("user", user);
+                              intents.putExtra("secret", mAccountDb.getSecret(user));
+                              intents.putExtra("issuer", mAccountDb.getIssuer(user));
+                              startActivity(intents);
+                            } else {
+                              Toast.makeText(thisActivity, "Incorrect Password", Toast.LENGTH_LONG).show();
+                            }
+                          }
+                        })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
         return true;
       default:
         return super.onContextItemSelected(item);

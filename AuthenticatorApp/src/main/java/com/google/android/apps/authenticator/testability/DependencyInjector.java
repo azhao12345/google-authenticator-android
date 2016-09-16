@@ -24,6 +24,7 @@ import com.google.android.apps.authenticator.OtpSource;
 import com.google.android.apps.authenticator.TotpClock;
 import com.google.android.apps.authenticator.dataimport.ExportServiceBasedImportController;
 import com.google.android.apps.authenticator.dataimport.ImportController;
+import com.google.android.apps.authenticator.keybackup.BackupPasswordManager;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -131,6 +132,14 @@ public final class DependencyInjector {
       sTotpClock = new TotpClock(getContext());
     }
     return sTotpClock;
+  }
+
+  private static BackupPasswordManager sBackupPasswordManager;
+  public static synchronized BackupPasswordManager getBackupPasswordManager() {
+    if(sBackupPasswordManager == null) {
+      sBackupPasswordManager = new BackupPasswordManager(getContext());
+    }
+    return sBackupPasswordManager;
   }
 
   /**
