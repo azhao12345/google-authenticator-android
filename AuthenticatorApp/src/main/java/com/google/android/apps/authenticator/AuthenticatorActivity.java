@@ -591,9 +591,12 @@ public class AuthenticatorActivity extends TestableActivity {
         type == mAccountDb.getType(user)) {
       return;  // nothing to update.
     }
+    //check if the code will overwrite a previous code, and ask the user to confrim
 
-    if (confirmBeforeSave) {
-      mSaveKeyDialogParams = new SaveKeyDialogParams(user, secret, type, counter, issuer);
+    boolean overwriting = mAccountDb.nameExists(user);
+
+    if (confirmBeforeSave || overwriting) {
+      mSaveKeyDialogParams = new SaveKeyDialogParams(user, secret, type, counter, issuer, overwriting);
       showDialog(DIALOG_ID_SAVE_KEY);
     } else {
       saveSecretAndRefreshUserList(user, secret, null, type, counter, issuer);
@@ -934,9 +937,12 @@ public class AuthenticatorActivity extends TestableActivity {
 
       case DIALOG_ID_SAVE_KEY:
         final SaveKeyDialogParams saveKeyDialogParams = mSaveKeyDialogParams;
+        String message = saveKeyDialogParams.overwrite ?
+                saveKeyDialogParams.user + "\n" + getText(R.string.overwrite_key_message) :
+                saveKeyDialogParams.user;
         dialog = new AlertDialog.Builder(this)
             .setTitle(R.string.save_key_message)
-            .setMessage(saveKeyDialogParams.user)
+            .setMessage(message)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setPositiveButton(R.string.ok,
                 new DialogInterface.OnClickListener() {
@@ -1257,13 +1263,15 @@ public class AuthenticatorActivity extends TestableActivity {
     private final OtpType type;
     private final Integer counter;
     private final String issuer;
+    private final boolean overwrite;
 
-    private SaveKeyDialogParams(String user, String secret, OtpType type, Integer counter, String issuer) {
+    private SaveKeyDialogParams(String user, String secret, OtpType type, Integer counter, String issuer, boolean overwrite) {
       this.user = user;
       this.secret = secret;
       this.type = type;
       this.counter = counter;
       this.issuer = issuer;
+      this.overwrite = true;
     }
   }
 }

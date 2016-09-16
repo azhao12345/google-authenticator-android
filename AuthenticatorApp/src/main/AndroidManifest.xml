@@ -16,7 +16,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.google.android.apps.authenticator2"
-          android:versionCode="23" android:versionName="2.23">
+          android:versionCode="24" android:versionName="2.24">
 
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="14" />
 

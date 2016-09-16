@@ -99,6 +99,13 @@
        by scanning a QR code or provided by the web browser. -->
   <string name="save_key_message">Save key for</string>
 
+  <!-- Question asking user to confirm adding a new account, the details of which were obtained
+     by scanning a QR code or provided by the web browser. -->
+  <string name="overwrite_key_message">
+
+    The account for this key already exists.  Saving will permanently overwrite the previous value.
+  </string>
+
   <!-- Error message displayed if the scanned QR code contains an empty key -->
   <string name="error_empty_secret">Cannot save empty secret</string>
 
