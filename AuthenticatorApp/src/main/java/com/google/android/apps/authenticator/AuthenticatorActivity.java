@@ -291,7 +291,7 @@ public class AuthenticatorActivity extends TestableActivity {
             (ViewGroup) findViewById(R.id.rename_root));
     final EditText nameEdit = (EditText) frame.findViewById(R.id.rename_edittext);
     new AlertDialog.Builder(this)
-            .setTitle("Enter a password to protect key sharing and backup, or leave blank to permanently disable this feature")
+            .setTitle("Add a password to enable backups, or cancel to disable")
             .setView(frame)
             .setPositiveButton(R.string.submit,
                     new DialogInterface.OnClickListener() {
